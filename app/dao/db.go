@@ -8,6 +8,7 @@ import (
 )
 
 // Prepare sqlx.DB
+//
 func NewDB(config *mysql.Config) (*sqlx.DB, error) {
 	driverName := "mysql"
 	db, err := sqlx.Open(driverName, config.FormatDSN())
