@@ -1,32 +1,36 @@
-package statuses
+package timeline
 
 import (
 	"encoding/json"
 	"log"
 	"net/http"
 	"strconv"
-
-	"github.com/go-chi/chi/v5"
 )
 
 type GetRequest struct {
-	id int
+	id    int
+	limit int
+	flag  bool
 }
 
 func (h *handler) Get(w http.ResponseWriter, r *http.Request) {
-
 	var req GetRequest
-	req.id, _ = strconv.Atoi(chi.URLParam(r, "id"))
+	queryParams := r.URL.Query()
+
+	req.flag, _ = strconv.ParseBool(queryParams.Get("only_media"))
+	req.id, _ = strconv.Atoi(queryParams.Get("since_id"))
+	req.limit, _ = strconv.Atoi(queryParams.Get("limit"))
+
 	ctx := r.Context()
-	dto, err := h.statusUsecase.FindStatusByID(ctx, req.id)
+	dto, err := h.timelineUsecase.Get(ctx, req.id, req.limit, req.flag)
 	if err != nil {
 		log.Print(err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
+
 	w.Header().Set("Content-Type", "application/json")
-	log.Print(dto)
-	if err := json.NewEncoder(w).Encode(dto.Status); err != nil {
+	if err := json.NewEncoder(w).Encode(dto.Timeline); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
