@@ -2,6 +2,7 @@ package accounts
 
 import (
 	"encoding/json"
+	"log"
 	"net/http"
 )
 
@@ -13,7 +14,7 @@ type AddRequest struct {
 
 // Handle request for `POST /v1/accounts`
 func (h *handler) Create(w http.ResponseWriter, r *http.Request) {
-
+	log.Print("1")
 	var req AddRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)

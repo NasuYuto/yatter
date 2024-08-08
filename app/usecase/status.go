@@ -10,6 +10,7 @@ import (
 
 type Status interface {
 	Create(ctx context.Context, content string, account_id int) (*CreateStatusDTO, error)
+	FindStatusByID(ctx context.Context, id int) (*GetStatusDTO, error)
 }
 
 type status struct {
@@ -18,6 +19,10 @@ type status struct {
 }
 
 type CreateStatusDTO struct {
+	Status *object.Status
+}
+
+type GetStatusDTO struct {
 	Status *object.Status
 }
 
@@ -52,5 +57,29 @@ func (s *status) Create(ctx context.Context, content string, account_id int) (*C
 
 	return &CreateStatusDTO{
 		Status: st,
+	}, nil
+}
+
+func (s *status) FindStatusByID(ctx context.Context, id int) (*GetStatusDTO, error) {
+	tx, err := s.db.Beginx()
+	if err != nil {
+		return nil, err
+	}
+
+	defer func() {
+		if err := recover(); err != nil {
+			tx.Rollback()
+		}
+
+		tx.Commit()
+	}()
+	dto, err := s.statusRepo.FindStatusByID(ctx, id)
+	if err != nil {
+
+		return nil, err
+	}
+
+	return &GetStatusDTO{
+		Status: dto,
 	}, nil
 }
